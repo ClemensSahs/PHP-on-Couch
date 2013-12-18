@@ -309,12 +309,19 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(count($ok),2);
 	}
 
-	public function testDeleteAdmin() {
-		$adm = new couchAdmin($this->aclient);
-		$adm->createAdmin("secondAdmin","password");
-		$adm->deleteAdmin("secondAdmin");
-		$adm->createAdmin("secondAdmin","password");
-	}
+    public function testDeleteAdmin() {
+        $adm = new couchAdmin($this->aclient);
+        $adm->createAdmin("secondAdmin","password");
+        $adm->deleteAdmin("secondAdmin");
+        $adm->createAdmin("secondAdmin","password");
+    }
+
+    public function testDeleteAdminWithNoLogin() {
+        $this->setExpectedException("InvalidArgumentException");
+
+        $adm = new couchAdmin($this->aclient);
+        $adm->deleteAdmin("");
+    }
 
 	public function testUsersDatabaseName () {
 		$adm = new couchAdmin($this->aclient,array("users_database"=>"test"));
