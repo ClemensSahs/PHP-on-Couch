@@ -102,12 +102,9 @@ class couchAdmin {
 	public function createAdmin ( $login, $password, $roles = array() ) {
 		$login = urlencode($login);
 		$data = (string)$password;
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
-		if ( strlen($data) < 1 ) {
-			throw new InvalidArgumentException("Password can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
+		$this->guardPasswordIsValid($password);
 		$url = '/_config/admins/'.urlencode($login);
 		try {
 			$raw = $this->client->query(
@@ -146,9 +143,8 @@ class couchAdmin {
 	*/
 	public function deleteAdmin ( $login ) {
 		$login = urlencode($login);
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
 
 		try {
 			$client = new couchClient( $this->client->dsn() , $this->usersdb);
@@ -180,12 +176,10 @@ class couchAdmin {
 	*/
 	public function createUser ($login, $password, $roles = array() ) {
 		$password = (string)$password;
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
-		if ( strlen($password) < 1 ) {
-			throw new InvalidArgumentException("Password can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
+		$this->guardPasswordIsValid($password);
+
 		$user = new stdClass();
 		$user->salt = sha1( microtime().mt_rand(1000000,9999999),false);
 		$user->password_sha = sha1( $password . $user->salt, false);
@@ -207,9 +201,9 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function deleteUser ( $login ) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
+
 		$client = new couchClient( $this->client->dsn() , $this->usersdb);
 		$doc = $client->getDoc("org.couchdb.user:".$login);
 		return $client->deleteDoc($doc);
@@ -223,9 +217,9 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function getUser ($login) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
+
 		$client = new couchClient( $this->client->dsn() , $this->usersdb, $this->client->options());
 		return $client->getDoc("org.couchdb.user:".$login);
 	}
@@ -353,9 +347,8 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function addDatabaseReaderUser($login) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
 		$sec = $this->getSecurity();
 		if ( in_array($login, $sec->readers->names) ) {
 			return true;
@@ -376,9 +369,8 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function addDatabaseAdminUser($login) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
 		$sec = $this->getSecurity();
 		if ( in_array($login, $sec->admins->names) ) {
 			return true;
@@ -419,9 +411,8 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function removeDatabaseReaderUser($login) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
 		$sec = $this->getSecurity();
 		if ( !in_array($login, $sec->readers->names) ) {
 			return true;
@@ -442,9 +433,8 @@ class couchAdmin {
 	* @throws InvalidArgumentException
 	*/
 	public function removeDatabaseAdminUser($login) {
-		if ( strlen($login) < 1 ) {
-			throw new InvalidArgumentException("Login can't be empty");
-		}
+
+		$this->guardLoginIsValid($login);
 		$sec = $this->getSecurity();
 		if ( !in_array($login, $sec->admins->names) ) {
 			return true;
@@ -580,5 +570,21 @@ class couchAdmin {
 		}
 		return $back;
 	}
+
+    protected function guardLoginIsValid($login) {
+        if ( strlen($login) < 1 ) {
+            throw new InvalidArgumentException("Login can't be empty");
+        }
+
+        return true;
+    }
+
+    protected function guardPasswordIsValid($password) {
+        if ( strlen($password) < 1 ) {
+            throw new InvalidArgumentException("Password can't be empty");
+        }
+
+        return true;
+    }
 
 }
