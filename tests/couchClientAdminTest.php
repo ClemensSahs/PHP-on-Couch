@@ -31,11 +31,31 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 		$this->aclient = null;
     }
 
+    /**
+     * @dataProvider dataProviderTestCreateAdmin
+     *
+     * @param unknown $login
+     * @param unknown $password
+     * @param array $roles
+     */
+    public function testCreateAdmin ($login,$password,$roles,$exception) {
+        if ( is_array($exception) && $exception[0] !== null) {
+            $this->setExpectedException($exception[0],$exception[1],$exception[2]);
+        }
 
-	public function testFirstAdmin () {
-		$adm = new couchAdmin($this->aclient);
-		$adm->createAdmin($this->admin["login"],$this->admin["password"]);
-	}
+        $adm = new couchAdmin($this->aclient);
+        $adm->createAdmin($this->admin["login"],$this->admin["password"]);
+    }
+
+    public function dataProviderTestCreateAdmin () {
+        return array(
+            array($this->admin["login"], $this->admin["password"],null,null),
+            array($this->admin["login"], $this->admin["password"], array("fooReader","barWriter"),null),
+            array("test", null, null,array('InvalidArgumentException',null,null)),
+            array(null,"test", null,array('InvalidArgumentException',null,null)),
+            array(null, null, null,array('InvalidArgumentException',null,null)),
+        );
+    }
 
     public function testAdminIsSet () {
         $this->setExpectedException('couchException','',412);
