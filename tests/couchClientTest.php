@@ -47,7 +47,7 @@ class couchClientTest extends PHPUnit_Framework_TestCase
 		$exist = $this->client->databaseExists();
 		$this->assertTrue($exist,"testing against an existing database");
 
-		$client = new couchClient($this->couch_server,"foofoofooidontexist");
+		$client = new couchClient($this->client->getServerUri(),"foofoofooidontexist");
 		$this->assertFalse($client->databaseExists(),"testing against a non-existing database");
 
 	}

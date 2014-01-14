@@ -11,11 +11,10 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 
 
     public function setUp()
-    {
+    {    	
         $config = require './tests/_files/config.php';
         $client_config = $config['databases']['client_test1'];
         $admin_config = $config['databases']['client_admin'];
-        $this->client = new couchClient($client_config['uri'],$client_config['dbname']);
 
         $this->aclient = new couchClient($admin_config['uri'],$admin_config['dbname']);
         try {
@@ -27,6 +26,17 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 
 	public function tearDown()
     {
+		$admin = new couchAdmin($this->aclient);
+
+		$admins=array('secondAdmin','jack','admin2');
+		foreach ( $admins as $a ) {
+			try {
+				$admin->deleteAdmin($a);
+			} catch (couchException $e) {
+				
+			}
+		}
+		
         $this->client = null;
 		$this->aclient = null;
     }
@@ -44,7 +54,7 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
         }
 
         $adm = new couchAdmin($this->aclient);
-        $adm->createAdmin($this->admin["login"],$this->admin["password"]);
+        $adm->createAdmin($login,$password);
     }
 
     public function dataProviderTestCreateAdmin () {
@@ -88,10 +98,22 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 	}
 
 	public function testAllUsers () {
+		
 		$adm = new couchAdmin($this->aclient);
-		$ok = $adm->getAllUsers(true);
-		$this->assertInternalType("array", $ok);
-		$this->assertEquals(count($ok),2);
+		
+		try {
+			$ok = $adm->createUser("joe","dalton");
+			$this->assertInternalType("object", $ok);
+			$this->assertObjectHasAttribute("ok",$ok);
+			$this->assertEquals($ok->ok,true);
+		} catch (couchConflictException $e) {
+			
+		}
+		
+		$userList = $adm->getAllUsers(true);
+		$this->assertInternalType("array", $userList);
+		$this->assertGreaterThan(0, count($userList));
+		
 	}
 
 	public function testGetUser () {
@@ -300,13 +322,19 @@ class couchClientAdminTest extends PHPUnit_Framework_TestCase
 
 	public function testDeleteUser() {
 		$adm = new couchAdmin($this->aclient);
+
+		$userCount = $adm->getAllUsers(true);
+		$this->assertInternalType("array", $userCount);
+		$this->assertGreaterThanOrEqual(1, count($userCount));
+		
 		$ok = $adm->deleteUser("joe");
 		$this->assertInternalType("object", $ok);
 		$this->assertObjectHasAttribute("ok",$ok);
 		$this->assertEquals($ok->ok,true);
-		$ok = $adm->getAllUsers(true);
-		$this->assertInternalType("array", $ok);
-		$this->assertEquals(count($ok),2);
+
+		$userCount2 = $adm->getAllUsers(true);
+		$this->assertInternalType("array", $userCount2);
+		$this->assertLessThan(count($userCount), count($userCount2));
 	}
 
     public function testDeleteAdmin() {
