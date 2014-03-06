@@ -76,6 +76,8 @@
             >
                 <arg value="--coverage-clover" />
                 <arg value="${basedir}/build/logs/clover.xml" />
+                <arg value="--coverage-php" />
+                <arg value="${basedir}/build/logs/clover.php" />
                 <arg value="-c" />
                 <arg value="${basedir}/tests/phpunit.xml.dist" />
                 <arg value="${basedir}/tests/" />

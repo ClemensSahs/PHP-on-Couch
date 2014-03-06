@@ -9,12 +9,14 @@ services:
 
 before_script:
  - php tests/_files/initDefaultDatabase.php
+ - wget https://scrutinizer-ci.com/ocular.phar
 
 script:
  - ant travis -keep-going
 
 after_script:
  - php vendor/bin/coveralls -v
+ - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.php
 
 notifications:
   email: false
